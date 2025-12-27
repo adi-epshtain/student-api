@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.database import init_db
+from app.models import Grade, Student  # noqa: F401 - Import to register models
 
 
 @asynccontextmanager
