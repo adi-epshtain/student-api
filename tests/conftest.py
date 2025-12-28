@@ -44,6 +44,10 @@ async def test_engine():
 @pytest.fixture
 async def db_session(test_engine):
     """Create a database session for testing."""
+    from app.models.grade import Grade
+    from app.models.student import Student
+    from sqlalchemy import delete
+    
     async_session_maker = async_sessionmaker(
         test_engine,
         class_=AsyncSession,
@@ -51,8 +55,17 @@ async def db_session(test_engine):
     )
     
     async with async_session_maker() as session:
+        # Clean up all data before each test (grades first due to FK constraint)
+        await session.execute(delete(Grade))
+        await session.execute(delete(Student))
+        await session.commit()
+        
         yield session
-        await session.rollback()
+        
+        # Clean up after test (grades first due to FK constraint)
+        await session.execute(delete(Grade))
+        await session.execute(delete(Student))
+        await session.commit()
 
 
 @pytest.fixture
