@@ -2,7 +2,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StudentCreate(BaseModel):
@@ -14,12 +14,11 @@ class StudentCreate(BaseModel):
 class StudentResponse(BaseModel):
     """Schema for student response."""
     
+    model_config = ConfigDict(from_attributes=True)
+    
     id: uuid.UUID
     name: str
     created_at: datetime
     avg_grade: float | None = Field(None, description="Average grade (computed elsewhere)")
-    
-    class Config:
-        from_attributes = True
 
 
