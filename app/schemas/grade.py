@@ -12,6 +12,12 @@ class GradeCreate(BaseModel):
     score: int = Field(..., ge=0, le=100, description="Grade score (0-100)")
 
 
+class GradeCreateBody(BaseModel):
+    """Schema for grade creation request body (score only)."""
+    
+    score: int = Field(..., ge=0, le=100, description="Grade score (0-100)")
+
+
 class GradeResponse(BaseModel):
     """Schema for grade response."""
     

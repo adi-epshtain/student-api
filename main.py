@@ -2,6 +2,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
+from app.api import grades_router, students_router
 from app.core.config import settings
 from app.core.database import init_db
 from app.models import Grade, Student  # noqa: F401 - Import to register models
@@ -22,6 +23,10 @@ app = FastAPI(
     version=settings.api_version,
     lifespan=lifespan,
 )
+
+# Register routers
+app.include_router(students_router)
+app.include_router(grades_router)
 
 
 @app.get("/")
