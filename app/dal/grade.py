@@ -11,7 +11,12 @@ async def add_grade(
     session: AsyncSession,
     grade_data: GradeCreate,
 ) -> Grade:
-    """Add a grade for a student."""
+    """
+    Add a grade for a student.
+    
+    Note: IntegrityError (e.g., constraint violations) should be handled
+    at the service/API layer with proper rollback.
+    """
     grade = Grade(
         id=uuid.uuid4(),
         student_id=grade_data.student_id,

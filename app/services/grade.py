@@ -15,6 +15,7 @@ async def add_grade(
     Add a grade for a student.
     
     Validates student exists before adding grade.
+    Raises ValueError if student not found (converted to 404 in API layer).
     """
     # Validate student exists
     stmt = select(Student).where(Student.id == grade_data.student_id)
@@ -24,7 +25,7 @@ async def add_grade(
     if student is None:
         raise ValueError(f"Student with id {grade_data.student_id} not found")
     
-    # Create grade via DAL
+    # Create grade via DAL (score validation handled by Pydantic schema)
     grade = await dal_add_grade(session, grade_data)
     return GradeResponse.model_validate(grade)
 

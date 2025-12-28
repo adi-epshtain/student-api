@@ -14,7 +14,12 @@ async def create_student(
     session: AsyncSession,
     student_data: StudentCreate,
 ) -> Student:
-    """Create a new student."""
+    """
+    Create a new student.
+    
+    Note: IntegrityError should be handled at the service/API layer
+    with proper rollback.
+    """
     student = Student(
         id=uuid.uuid4(),
         name=student_data.name,
@@ -34,10 +39,22 @@ async def list_students_with_avg(
     offset: int = 0,
 ) -> list[tuple[Student, float | None]]:
     """
-    List students with their average grades.
+    List students with their average grades using SQL aggregation.
     
-    Returns list of tuples: (Student, avg_grade).
-    Uses LEFT JOIN to include students without grades.
+    Args:
+        session: Database session
+        min_avg_grade: Filter by minimum average (excludes students without grades)
+        sort_by: Field to sort by (validated via Literal type)
+        order: Sort direction (validated via Literal type)
+        limit: Maximum results (pagination)
+        offset: Skip N results (pagination)
+    
+    Returns:
+        List of tuples: (Student, avg_grade). avg_grade is None for students without grades.
+    
+    Note:
+        Uses LEFT JOIN to include students without grades.
+        HAVING clause filters out NULL averages when min_avg_grade is provided.
     """
     # Build aggregation query with LEFT JOIN
     stmt = (
@@ -50,10 +67,11 @@ async def list_students_with_avg(
     )
     
     # Apply min_avg_grade filter if provided
+    # HAVING clause excludes students without grades (NULL avg_grade)
     if min_avg_grade is not None:
         stmt = stmt.having(func.avg(Grade.score) >= min_avg_grade)
     
-    # Apply sorting
+    # Apply sorting (validated via Literal type in function signature)
     sort_column = {
         "name": Student.name,
         "avg_grade": func.avg(Grade.score),
@@ -65,7 +83,7 @@ async def list_students_with_avg(
     else:
         stmt = stmt.order_by(sort_column.asc())
     
-    # Apply pagination
+    # Apply pagination (limit/offset validated in API layer)
     stmt = stmt.limit(limit).offset(offset)
     
     # Execute query
